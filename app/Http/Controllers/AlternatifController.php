@@ -3,6 +3,10 @@
 namespace App\Http\Controllers;
 
 use App\Models\Alternatif;
+use App\Models\Bobot;
+use App\Models\Kriteria;
+use App\Models\MatrixKeputusan;
+use App\Models\Skala;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
@@ -14,6 +18,26 @@ class AlternatifController extends Controller
         return view('alternatif.index', compact('alternatif'));
     }
 
+    public function accumulateMatrix()
+    {
+        MatrixKeputusan::whereNotNull('id_matrix')->delete();
+        // Matrix
+        $kriteria = Kriteria::orderBy('id_kriteria', 'asc')->get();
+        $alternatif = Alternatif::all();
+        $bobot = Bobot::all();
+        $skala = Skala::all();
+
+        for ($i = 0; $i < count($alternatif); $i++) {
+            for ($j = 0; $j < count($kriteria); $j++) {
+                MatrixKeputusan::create([
+                    'id_alternatif' => $alternatif[$i]->id_alternatif,
+                    'id_bobot' => $bobot[$j]->id_bobot,
+                    'id_skala' => $skala[$i]->id_skala,
+                ]);
+            }
+        }
+    }
+
     public function store(Request $request)
     {
         try {
@@ -21,6 +45,7 @@ class AlternatifController extends Controller
             Alternatif::create([
                 'nm_alternatif' => $request->nama_alternatif
             ]);
+            AlternatifController::accumulateMatrix();
             DB::commit();
             return redirect()->back();
         } catch (\Exception $e) {
@@ -46,10 +71,16 @@ class AlternatifController extends Controller
 
     public function destroy($id)
     {
-        $alternatif = Alternatif::find($id);
-        if ($alternatif->delete()) {
+        try {
+            DB::beginTransaction();
+            $alternatif = Alternatif::find($id);
+            $alternatif->delete();
+            AlternatifController::accumulateMatrix();
+            DB::commit();
+            return redirect()->back();
+        } catch (\Exception $e) {
+            DB::rollBack();
             return redirect()->back();
         }
-        return redirect()->back();
     }
 }

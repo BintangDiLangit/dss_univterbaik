@@ -54,7 +54,6 @@ class KriteriaController extends Controller
         $bobot = Bobot::all();
         $skala = Skala::all();
 
-        $accumulateLoopingMatrix = count($alternatif) * count($bobot);
         for ($i = 0; $i < count($alternatif); $i++) {
             for ($j = 0; $j < count($kriteria); $j++) {
                 MatrixKeputusan::create([
