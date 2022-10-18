@@ -46,9 +46,10 @@ class SkalaController extends Controller
                 'nm_skala' => $request->nama_skala,
                 'value' => $request->value
             ]);
-            SkalaController::accumulateMatrix();
 
             DB::commit();
+            SkalaController::accumulateMatrix();
+
             return redirect()->back();
         } catch (\Exception $e) {
             DB::rollBack();
@@ -78,8 +79,8 @@ class SkalaController extends Controller
             DB::beginTransaction();
             $skala = Skala::find($id);
             $skala->delete();
-            SkalaController::accumulateMatrix();
             DB::commit();
+            SkalaController::accumulateMatrix();
             return redirect()->back();
         } catch (\Exception $e) {
             DB::rollBack();

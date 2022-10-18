@@ -23,11 +23,11 @@ class AlternatifController extends Controller
         MatrixKeputusan::whereNotNull('id_matrix')->delete();
         // Matrix
         $kriteria = Kriteria::orderBy('id_kriteria', 'asc')->get();
-        $alternatif = Alternatif::all();
+        $alternatif = Alternatif::orderBy('id_alternatif', 'asc')->get();
         $bobot = Bobot::all();
         $skala = Skala::all();
 
-        for ($i = 0; $i < count($alternatif); $i++) {
+        for ($i = 0; $i < count($alternatif) - 1; $i++) {
             for ($j = 0; $j < count($kriteria); $j++) {
                 MatrixKeputusan::create([
                     'id_alternatif' => $alternatif[$i]->id_alternatif,
@@ -45,8 +45,8 @@ class AlternatifController extends Controller
             Alternatif::create([
                 'nm_alternatif' => $request->nama_alternatif
             ]);
-            AlternatifController::accumulateMatrix();
             DB::commit();
+            AlternatifController::accumulateMatrix();
             return redirect()->back();
         } catch (\Exception $e) {
             DB::rollBack();
@@ -75,8 +75,8 @@ class AlternatifController extends Controller
             DB::beginTransaction();
             $alternatif = Alternatif::find($id);
             $alternatif->delete();
-            AlternatifController::accumulateMatrix();
             DB::commit();
+            AlternatifController::accumulateMatrix();
             return redirect()->back();
         } catch (\Exception $e) {
             DB::rollBack();
