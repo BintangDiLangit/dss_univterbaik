@@ -20,20 +20,20 @@ class AlternatifController extends Controller
 
     public function accumulateMatrix()
     {
-        MatrixKeputusan::whereNotNull('id_matrix')->delete();
-        // Matrix
         $kriteria = Kriteria::orderBy('id_kriteria', 'asc')->get();
         $alternatif = Alternatif::orderBy('id_alternatif', 'asc')->get();
         $bobot = Bobot::all();
         $skala = Skala::all();
-
-        for ($i = 0; $i < count($alternatif) - 1; $i++) {
-            for ($j = 0; $j < count($kriteria); $j++) {
-                MatrixKeputusan::create([
-                    'id_alternatif' => $alternatif[$i]->id_alternatif,
-                    'id_bobot' => $bobot[$j]->id_bobot,
-                    'id_skala' => $skala[$i]->id_skala,
-                ]);
+        if (count($alternatif) == count($skala)) {
+            MatrixKeputusan::whereNotNull('id_matrix')->delete();
+            for ($i = 0; $i < count($alternatif) - 1; $i++) {
+                for ($j = 0; $j < count($kriteria); $j++) {
+                    MatrixKeputusan::create([
+                        'id_alternatif' => $alternatif[$i]->id_alternatif,
+                        'id_bobot' => $bobot[$j]->id_bobot,
+                        'id_skala' => $skala[$i]->id_skala,
+                    ]);
+                }
             }
         }
     }
@@ -74,9 +74,9 @@ class AlternatifController extends Controller
         try {
             DB::beginTransaction();
             $alternatif = Alternatif::find($id);
+            MatrixKeputusan::where('id_alternatif', $id)->delete();
             $alternatif->delete();
             DB::commit();
-            AlternatifController::accumulateMatrix();
             return redirect()->back();
         } catch (\Exception $e) {
             DB::rollBack();
